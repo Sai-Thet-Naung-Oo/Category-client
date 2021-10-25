@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Category Client</h1>
+        <ul class="list-group"></ul>
+
+        <br>
+
+        <!-- <input type="text" id="box" class="form-control">
+        <button class="btn btn-primary">ADD</button> btn-outline-secondary-->
+
+        <div class="input-group col-6">
+            <input type="text" class="form-control" id="box" placeholder="Enter Category Name" >
+            <div class="input-group-append">
+              <button class="btn btn-primary">Add</button>
+            </div>
+          </div>
+
+    </div>
+
+
+    <script src="jquery.js"></script>
+    <script src="bootstrap.bundle.min.js"></script>
+    <script>
+
+        const api = 'http://localhost:8000/api/categories';
+
+
+
+
+        function EditAndDelete(name,id){
+
+            var del = $('<a>')
+                    .addClass('close')
+                    .html('&times;')
+                    .click(function () {
+                        $(this).parent().remove();
+                        return fetch(api + '/' + id, { method: 'delete' });
+                    });
+
+            var li = $('<li>').html($('<span>').html(name))
+                .addClass('list-group-item')
+                .append(del)
+                .dblclick(function () {
+                    var text = prompt("Enter category");
+                    $('span', this).html(text);
+                    fetch(api + '/' + id, {
+                        method: 'put',
+                        body: JSON.stringify({ name: text }),
+                        headers: { 'content-type': 'application/json' }
+                    });
+                });
+
+            return li;
+
+        }
+
+
+        fetch(api).then(function (res) {
+            return res.json();    //return promise
+        }).then(function (data) {
+
+
+            for (let i=0;i<data.length;i++) {
+                
+                        let id = data[i].id;
+                        let name=data[i].name;
+
+                        var li=EditAndDelete(name,id);
+
+                     $('ul').append(li);
+            }
+        }).catch(function () {
+            var li = $('<li>').html('Error fetching data')
+                .addClass('bg-warning text-center list-group-item');
+            $('ul').append(li);
+        });
+
+        //Add to List
+        $('button').click(function () {
+            var text = $('#box').val();
+            
+            let name,id;
+           
+
+            fetch(api, {
+                method: 'post',
+                body: JSON.stringify({ name: text }),
+                headers: {
+                    'content-type': 'application/json'
+                }
+            }).then((res)=>{
+                return res.json();
+            }).then((data)=>{
+                name=data.name;
+                id=data.id;
+                console.log(data.id,name,id);
+                $('ul').append(EditAndDelete(name,id));
+            });
+
+           
+            $('#box').val('').focus();
+            
+        })
+
+    </script>
+</body>
+
+</html>
